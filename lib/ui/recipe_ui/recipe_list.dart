@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
+import 'package:kidsmovie/networking/recipe_networking/ApiResult.dart';
+import 'package:kidsmovie/networking/recipe_networking/new_recipe_service.dart';
 import 'package:kidsmovie/util/CustomDropDownMenuItem.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -132,7 +135,7 @@ class _RecipeListState extends State<RecipeList> {
                       autofocus: false,
                       onSubmitted: (value) {
                         startSearch(_searchTextController.text.trim());
-                        if (!previousSearches.contains(value)) {
+                        if (!previousSearches.contains(value) && value != '') {
                           previousSearches.add(value);
                           savePreviousSearches();
                         }
@@ -140,29 +143,32 @@ class _RecipeListState extends State<RecipeList> {
                     ),
                   ),
                   PopupMenuButton<String>(
-                      icon: Icon(
-                        Icons.arrow_drop_down,
-                        color: Colors.grey[600],
-                      ),
-                      onSelected: (value) {
-                        startSearch(_searchTextController.text.trim());
-                      },
-                      itemBuilder: (BuildContext context) {
-                        return previousSearches
-                            .map<CustomDropDownMenuItem<String>>(
-                                (String value) {
-                          return CustomDropDownMenuItem(
-                            value: value,
-                            text: value,
-                            callback: () {
-                              setState(() {
+                    icon: Icon(
+                      Icons.arrow_drop_down,
+                      color: Colors.grey[600],
+                    ),
+                    onSelected: (value) {
+                      _searchTextController.text = value;
+                      startSearch(value);
+                    },
+                    itemBuilder: (BuildContext context) {
+                      return previousSearches
+                          .map<CustomDropDownMenuItem<String>>((String value) {
+                        return CustomDropDownMenuItem(
+                          value: value,
+                          text: value,
+                          callback: () {
+                            setState(
+                              () {
                                 previousSearches.remove(value);
                                 Navigator.pop(context);
-                              });
-                            },
-                          );
-                        }).toList();
-                      }),
+                              },
+                            );
+                          },
+                        );
+                      }).toList();
+                    },
+                  ),
                 ],
               ),
             ),
@@ -188,8 +194,8 @@ class _RecipeListState extends State<RecipeList> {
     if (_searchTextController.text.length < 3) {
       return Container();
     }
-    return FutureBuilder<ApiRecipeQuery>(
-      future: getRecipeData(
+    return FutureBuilder<Response<ApiResult<ApiRecipeQuery>>>(
+      future: NewRecipeService.create().queryRecipes(
         _searchTextController.text.trim(),
         currentStartPosition,
         currentEndPosition,
@@ -208,14 +214,18 @@ class _RecipeListState extends State<RecipeList> {
             );
           }
           loading = false;
-          final result = snapshot.data;
-          inErrorState = false;
-          if (result != null) {
-            currentCount = result.count;
-            hasMore = result.more;
-            currentSearchList.addAll(result.hits);
-            if (result.to < currentEndPosition) {
-              currentEndPosition = result.to;
+          final query = snapshot.data?.body;
+          if (query is Error) {
+            inErrorState = false;
+            return _buildSearchList(context, currentSearchList);
+          }
+          final data = (query as Success).value;
+          if (data != null) {
+            currentCount = data.count;
+            hasMore = data.more;
+            currentSearchList.addAll(data.hits);
+            if (data.to < currentEndPosition) {
+              currentEndPosition = data.to;
             }
           }
           return _buildSearchList(context, currentSearchList);
@@ -251,7 +261,7 @@ class _RecipeListState extends State<RecipeList> {
 
   Widget _buildSearchList(BuildContext context, List<ApiHits> hits) {
     final size = MediaQuery.of(context).size;
-    const itemHeight = 310;
+    const itemHeight = 320;
     final itemWidth = size.width / 2;
     return Flexible(
       child: GridView.builder(
