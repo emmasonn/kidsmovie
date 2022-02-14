@@ -1,0 +1,77 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'recipe_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+ApiRecipeQuery _$ApiRecipeQueryFromJson(Map<String, dynamic> json) {
+  return ApiRecipeQuery(
+    query: json['q'] as String,
+    from: json['from'] as int,
+    to: json['to'] as int,
+    count: json['count'] as int,
+    more: json['more'] as bool,
+    hits: (json['hits'] as List<dynamic>)
+        .map((e) => ApiHits.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
+}
+
+Map<String, dynamic> _$ApiRecipeQueryToJson(ApiRecipeQuery instance) =>
+    <String, dynamic>{
+      'q': instance.query,
+      'from': instance.from,
+      'to': instance.to,
+      'count': instance.count,
+      'more': instance.more,
+      'hits': instance.hits,
+    };
+
+ApiHits _$ApiHitsFromJson(Map<String, dynamic> json) {
+  return ApiHits(
+    recipe: ApiRecipe.fromJson(json['recipe'] as Map<String, dynamic>),
+  );
+}
+
+Map<String, dynamic> _$ApiHitsToJson(ApiHits instance) => <String, dynamic>{
+      'recipe': instance.recipe,
+    };
+
+ApiRecipe _$ApiRecipeFromJson(Map<String, dynamic> json) {
+  return ApiRecipe(
+    label: json['label'] as String,
+    image: json['image'] as String,
+    url: json['url'] as String,
+    ingredients: (json['ingredients'] as List<dynamic>)
+        .map((e) => ApiIngredient.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    calories: (json['calories'] as num).toDouble(),
+    totalTime: (json['totalTime'] as num).toDouble(),
+    totalWeight: (json['totalWeight'] as num).toDouble(),
+  );
+}
+
+Map<String, dynamic> _$ApiRecipeToJson(ApiRecipe instance) => <String, dynamic>{
+      'label': instance.label,
+      'image': instance.image,
+      'url': instance.url,
+      'ingredients': instance.ingredients,
+      'calories': instance.calories,
+      'totalTime': instance.totalTime,
+      'totalWeight': instance.totalWeight,
+    };
+
+ApiIngredient _$ApiIngredientFromJson(Map<String, dynamic> json) {
+  return ApiIngredient(
+    name: json['text'] as String,
+    weight: (json['weight'] as num).toDouble(),
+  );
+}
+
+Map<String, dynamic> _$ApiIngredientToJson(ApiIngredient instance) =>
+    <String, dynamic>{
+      'text': instance.name,
+      'weight': instance.weight,
+    };
